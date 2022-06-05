@@ -1,0 +1,7 @@
+{
+  "name": "MyLinks",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react"
+}

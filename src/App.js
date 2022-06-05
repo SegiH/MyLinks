@@ -339,6 +339,8 @@ const App = () => {
 		item => (
                (item.Name && item.Name.toLowerCase().includes(filterText.toLowerCase()))
                ||
+               (item.URL && item.URL.toLowerCase().includes(filterText.toLowerCase()))
+               ||
                (item.LinkCategoryName && item.LinkCategoryName.toLowerCase().includes(filterText.toLowerCase()))
           )
 	);

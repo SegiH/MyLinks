@@ -12,7 +12,8 @@ const Input = styled.input.attrs(props => ({
      border-top-right-radius: 0;
      border-bottom-right-radius: 0;
      border: 1px solid #e5e5e5;
-     padding: 0 32px 0 16px;
+     padding: 0 32px 0 6px;
+     margin-right: 2px;
 `;
 
 const ClearButton = styled.button`
@@ -34,8 +35,8 @@ const FilterComponent = ({ filterText, onFilter, onClear }) => (
                id="search"
                type="text"
                placeholder="Filter links..."
-              value={filterText}
-              onChange={onFilter}
+               value={filterText}
+               onChange={onFilter}
           />
     
     <ClearButton onClick={onClear}>X</ClearButton>

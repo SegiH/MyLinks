@@ -36,6 +36,7 @@ setupIonicReact();
 
 const App = () => {
      const [authKey,setAuthKey] = useState("");
+     const [backendURL,setBackendURL] = useState("");
      const [currentUserID,setCurrentUserID] = useState("");
      const [deleteLinkID,setDeleteLinkID] = useState(null);
      const [deleteDialogText,setDeleteDialogText] = useState('');
@@ -47,6 +48,7 @@ const App = () => {
      const [links,setLinks] = useState(null);
      const [linkCategories,setLinkCategories] = useState(null);
      const [newAuthKey,setNewAuthKey] = useState("");
+     const [newBackendURL,setNewBackendURL] = useState("");
      const [newCurrentUserID,setNewCurrentUserID] = useState("");
      const [modalDialogIsOpen,setModalDialogIsOpen] = useState(false);
      const [modalDialogText,setModalDialogText] = useState(false);
@@ -55,7 +57,7 @@ const App = () => {
      const [usersLoaded,setUsersLoaded] = useState(false);
      const [usersLoadingStarted,setUsersLoadingStarted] = useState(false);
      
-     const backendURL="https://mylinks-backend.hovav.org";
+     //const backendURL="";
 
      const addLinkClickHandler = () => {
           setIsAdding(true);
@@ -100,7 +102,7 @@ const App = () => {
      }
 
      const getUsers = useCallback(async () => {
-          if (authKey === "" || authKey === null || usersLoadingStarted)
+          if (authKey === "" || authKey === null || usersLoadingStarted || backendURL === "" || backendURL === null)
                return;
          
           setUsersLoadingStarted(true);
@@ -118,13 +120,21 @@ const App = () => {
           .catch(err=> {
                showModalDialog(`An error occurred getting the users with the error ${err.error}`);
           })
-     }, [authKey,usersLoadingStarted]);
+     }, [authKey, backendURL, usersLoadingStarted]);
 
      const getAuthKey = useCallback(async () => {
           const auth = await get('AuthKey');
 
           if (auth !== "" && auth !== null) {
                setAuthKey(auth);
+          }
+     }, []);
+
+     const getBackendUrl = useCallback(async () => {
+          const backendURL = await get('BackendURL');
+
+          if (backendURL !== "" && backendURL !== null) {
+               setBackendURL(backendURL);
           }
      }, []);
 
@@ -165,7 +175,7 @@ const App = () => {
           .catch(err=> {
                showModalDialog(`An error occurred getting the categories with the error ${err}`);
           })
-     }, [authKey, currentUserID]);
+     }, [authKey, backendURL, currentUserID]);
 
      const getURLs = useCallback(async () => {
           if (authKey === "" || authKey === null || currentUserID?.length === 0)
@@ -182,13 +192,14 @@ const App = () => {
           .catch(err=> {
                showModalDialog(`An error occurred getting the links with the error ${err}`);
           })
-     }, [authKey, currentUserID]);
+     }, [authKey, backendURL, currentUserID]);
 
      const isEditingOptionsHandler = () => {
           if (isEditingOptions === false) {
                // Use current values as default for new value
                setNewCurrentUserID(currentUserID);
                setNewAuthKey(authKey);
+               setNewBackendURL(backendURL);
 
                if (authKey !== "" && usersLoaded === false) {
                     getUsers();                    
@@ -210,6 +221,11 @@ const App = () => {
                return;
           }
 
+          if (newBackendURL?.length === 0) {
+               showModalDialog("Please enter the backend URL");
+               return;
+          }
+
           if (usersLoaded && newCurrentUserID?.length === 0) {
                showModalDialog("Please select the user");
                return;
@@ -220,6 +236,8 @@ const App = () => {
 
           setAuthKey(newAuthKey);
           setAuthKeyStorage(newAuthKey);
+          setBackendURL(newBackendURL);
+          setBackendURLStorage(newBackendURL);
           setIsEditingOptions(false);
      }
 
@@ -235,6 +253,18 @@ const App = () => {
            }
      }
 
+     const setBackendURLStorage = async (newBackendURL) => {
+          if (newBackendURL !== null && newBackendURL !== "") {
+               set('BackendURL', newBackendURL);
+
+               setBackendURL(newBackendURL);
+           } else {
+               await remove('BackendURL');
+
+               setBackendURL('');
+           }
+     }
+
      const setCurrentUserIDStorage = async (newCurrentUserID) => {
           if (newCurrentUserID !== null && newCurrentUserID !== "") {
                set('CurrentUserID', newCurrentUserID);
@@ -245,6 +275,10 @@ const App = () => {
 
      const setNewAuthKeyChangeHandler = (event) => {
           setNewAuthKey(event.target.value);
+     }
+
+     const setNewBackendURLChangeHandler = (event) => {
+          setNewBackendURL(event.target.value);
      }
 
      const setNewCurrentUserIDClickHandler = (event) => {
@@ -290,7 +324,9 @@ const App = () => {
           getCurrentUserID();
 
           getAuthKey();
-     },[users, usersLoaded, getAuthKey, getUsers, getCurrentUserID]);
+
+          getBackendUrl()
+     },[users, usersLoaded, getAuthKey, getBackendUrl, getUsers, getCurrentUserID]);
      
      useEffect(() => {
           if (currentUserID !== "") {
@@ -347,7 +383,7 @@ const App = () => {
 
      return (
           <IonApp id="AppComponent">
-               <IonMenu contentId="AppComponent" type="overlay" className="clickable ion-activatable">
+                <IonMenu contentId="AppComponent" type="overlay" className="clickable ion-activatable">
                     <IonHeader>
                          <IonToolbar color="primary">
                               <IonTitle>MyLinks</IonTitle>
@@ -414,7 +450,25 @@ const App = () => {
                                              <IonInput className="dashed-border" type="password" value={newAuthKey} onIonChange={setNewAuthKeyChangeHandler} />
                                         </IonCol>
                                    }
-                              </IonRow>                              
+                              </IonRow>
+
+                              <IonRow>
+                                   <IonCol size="6">
+                                        Backend URL
+                                   </IonCol>
+
+                                   {!isEditingOptions &&
+                                        <IonCol size="6">
+                                             {backendURL}
+                                        </IonCol>
+                                   }
+
+                                   {isEditingOptions &&
+                                        <IonCol size="6">
+                                             <IonInput className="dashed-border" type="text" value={newBackendURL} onIonChange={setNewBackendURLChangeHandler} />
+                                        </IonCol>
+                                   }
+                              </IonRow>
                          </IonGrid>
                     </IonContent>
                </IonMenu>
